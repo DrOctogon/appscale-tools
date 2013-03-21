@@ -109,7 +109,9 @@ class AppControllerClient():
           function, *args)
       else:
         raise exception
-    except ssl.SSLError:
+    #except ssl.SSLError:
+    except Exception:  # Should be ssl.SSLError but the ssl module isn't 
+                       #  available when runing as a App.
       # these are intermittent, so don't decrement our retry count for this
       signal.alarm(0)  # turn off the alarm before we retry
       return self.run_with_timeout(timeout_time, default, num_retries, function,
@@ -230,6 +232,36 @@ class AppControllerClient():
     return self.run_with_timeout(10, "", self.DEFAULT_NUM_RETRIES,
       self.server.status, self.secret)
 
+
+  def get_api_status(self):
+    """Queries the AppController to see what the API status is.
+
+    Returns:
+      A dct that indicates what the AppController reports the status is.
+    """
+    jdata = self.run_with_timeout(10, "", self.DEFAULT_NUM_RETRIES,
+      self.server.get_api_status, self.secret)
+    return json.loads(jdata)
+
+  def get_database_information(self):
+    """Queries the AppController to see what the database info is.
+
+    Returns:
+      A dct that indicates what the AppController reports info is.
+    """
+    jdata = self.run_with_timeout(10, "", self.DEFAULT_NUM_RETRIES,
+      self.server.get_database_information, self.secret)
+    return json.loads(jdata)
+
+  def get_stats(self):
+    """Queries the AppController to see what its stats are.
+
+    Returns:
+      A dict that indicates what the AppController reports its stats as.
+    """
+    jdata = self.run_with_timeout(10, "", self.DEFAULT_NUM_RETRIES,
+      self.server.get_stats_json, self.secret)
+    return json.loads(jdata)
 
   def is_initialized(self):
     """Queries the AppController to see if it has started up all of the API
